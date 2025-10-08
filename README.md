@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NextJS Auth + Dashboard + User Management Template
 
-## Getting Started
+**A production-lean, reusable boilerplate** for building SaaS / admin-style apps  
+(inspired by Laravel structure, built with Next.js 15 + TypeScript + Tailwind)
 
-First, run the development server:
+---
+
+## Table of Contents
+
+1. [Why This Template](#why-this-template)  
+2. [Tech Stack & Versions](#tech-stack--versions)  
+3. [Project Structure](#project-structure)  
+4. [Setup & Development](#setup--development)  
+   - Prerequisites  
+   - Docker / local services  
+   - Environment variables  
+   - Running migrations & seeding  
+   - Starting dev server  
+5. [Feature Overview](#feature-overview)  
+   - Authentication  
+   - RBAC / Authorization  
+   - Dashboard & User Management  
+   - Security (rate limiting, CSP, headers)  
+6. [Laravel → Next Mapping](#laravel-→-next-mapping)  
+7. [Testing](#testing)  
+8. [CI / Quality Checks](#ci--quality-checks)  
+9. [Branch: Auth.js v5 Beta](#branch-authjs-v5-beta)  
+10. [Roadmap & Extensibility](#roadmap--extensibility)  
+11. [Troubleshooting / FAQs](#troubleshooting--faqs)  
+12. [License](#license)  
+
+---
+
+## Why This Template
+
+Brief pitch: This template gives you a “ship-fast” starting point for web apps needing auth, RBAC, admin dashboards, and user management. You don’t waste weeks wiring boilerplate.
+
+---
+
+## Tech Stack & Versions
+
+- Node.js **22 LTS** (with upgrade notes to 24)  
+- Next.js **15.x**  
+- React **19**  
+- TypeScript **5.9.x**  
+- Tailwind CSS **v4** + shadcn/ui  
+- Prisma **6.x** + PostgreSQL  
+- NextAuth.js **v4** (with adapter)  
+- CASL **v6** for RBAC  
+- Zod for input validation  
+- Upstash Rate Limit for API endpoints  
+- Nodemailer + MailHog (dev)  
+- Vitest for unit tests, Playwright for e2e  
+
+---
+
+## Project Structure
+
+(Insert ASCII tree + brief explanation, similar to above.)
+
+---
+
+## Setup & Development
+
+### Prerequisites
+
+- Docker & Docker Compose  
+- Node.js 22 installed  
+- pnpm / yarn / npm (we use `pnpm` in examples)
+
+### Local Services (via Docker)
+
+We include a `docker-compose.yml` that brings up:
+
+- PostgreSQL  
+- MailHog (SMTP and web UI)  
+
+Start services:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+docker compose up -d
