@@ -1,81 +1,88 @@
-# NextJS Auth + Dashboard + User Management Template
+# Next.js 15 Auth + Dashboard + User Management Template
 
-**A production-lean, reusable boilerplate** for building SaaS / admin-style apps  
-(inspired by Laravel structure, built with Next.js 15 + TypeScript + Tailwind)
-
----
-
-## Table of Contents
-
-1. [Why This Template](#why-this-template)  
-2. [Tech Stack & Versions](#tech-stack--versions)  
-3. [Project Structure](#project-structure)  
-4. [Setup & Development](#setup--development)  
-   - Prerequisites  
-   - Docker / local services  
-   - Environment variables  
-   - Running migrations & seeding  
-   - Starting dev server  
-5. [Feature Overview](#feature-overview)  
-   - Authentication  
-   - RBAC / Authorization  
-   - Dashboard & User Management  
-   - Security (rate limiting, CSP, headers)  
-6. [Laravel → Next Mapping](#laravel-→-next-mapping)  
-7. [Testing](#testing)  
-8. [CI / Quality Checks](#ci--quality-checks)  
-9. [Branch: Auth.js v5 Beta](#branch-authjs-v5-beta)  
-10. [Roadmap & Extensibility](#roadmap--extensibility)  
-11. [Troubleshooting / FAQs](#troubleshooting--faqs)  
-12. [License](#license)  
-
----
-
-## Why This Template
-
-Brief pitch: This template gives you a “ship-fast” starting point for web apps needing auth, RBAC, admin dashboards, and user management. You don’t waste weeks wiring boilerplate.
-
----
-
-## Tech Stack & Versions
-
-- Node.js **22 LTS** (with upgrade notes to 24)  
-- Next.js **15.x**  
-- React **19**  
-- TypeScript **5.9.x**  
-- Tailwind CSS **v4** + shadcn/ui  
-- Prisma **6.x** + PostgreSQL  
-- NextAuth.js **v4** (with adapter)  
-- CASL **v6** for RBAC  
-- Zod for input validation  
-- Upstash Rate Limit for API endpoints  
-- Nodemailer + MailHog (dev)  
-- Vitest for unit tests, Playwright for e2e  
-
----
-
-## Project Structure
-
-(Insert ASCII tree + brief explanation, similar to above.)
-
----
-
-## Setup & Development
-
-### Prerequisites
-
-- Docker & Docker Compose  
-- Node.js 22 installed  
-- pnpm / yarn / npm (we use `pnpm` in examples)
-
-### Local Services (via Docker)
-
-We include a `docker-compose.yml` that brings up:
-
-- PostgreSQL  
-- MailHog (SMTP and web UI)  
-
-Start services:
+## Quick Start
 
 ```bash
+pnpm install
+cp .env.example .env.local
 docker compose up -d
+pnpm dev
+```
+
+## Stack
+
+- **Node.js 22 LTS** (see upgrade notes for Node 24)
+- **Next.js 15** (App Router)
+- **React 19**
+- **TypeScript 5.9**
+- **Tailwind CSS v4** + **shadcn/ui**
+- **PostgreSQL + Prisma 6**
+- **NextAuth.js v4** (DB sessions, Prisma adapter)
+- **CASL v6** (RBAC)
+- **Zod** (validation)
+- **Upstash Ratelimit** (rate limiting)
+- **Nodemailer** (MailHog for dev email)
+- **Vitest** (unit), **Playwright** (e2e)
+
+## Docker Compose
+
+- `db`: Postgres 15
+- `mailhog`: SMTP testing (http://localhost:8025)
+- `pgadmin`: DB browser (http://localhost:5050, admin@local.dev/admin)
+
+## Laravel Mapping
+
+| Laravel Concept      | Next.js/Stack Equivalent                |
+|----------------------|-----------------------------------------|
+| Controller           | Route handler (`route.ts`)              |
+| Middleware           | `middleware.ts` + server actions        |
+| Policies/Guards      | CASL abilities (server & UI)            |
+| FormRequest          | Zod schemas                             |
+| Service Container    | File-scoped modules in `src/lib/`       |
+
+## Setup Steps
+
+1. Clone repo, install deps, copy `.env.example` to `.env.local`.
+2. Start Docker: `docker compose up -d`
+3. Run migrations/seeds: `pnpm prisma migrate deploy && pnpm prisma db seed`
+4. Start dev server: `pnpm dev`
+5. Access MailHog at [localhost:8025](http://localhost:8025), pgAdmin at [localhost:5050](http://localhost:5050).
+
+## Upgrade to Node 24 LTS
+
+- Update `.nvmrc` to `24`
+
+---
+
+## Node 24 LTS Upgrade Checklist
+
+1. Update `.nvmrc` to `24`
+2. Run `nvm install 24 && nvm use`
+3. Update `package.json` engines field if pinned
+4. Test app locally, check for deprecation warnings
+5. Confirm all dependencies support Node 24
+6. Update CI config if needed
+- Run `nvm install 24 && nvm use`
+- Update `package.json` engines if needed
+- Test app, check for deprecation warnings
+- Confirm all dependencies support Node 24
+
+## Decisions & Trade-offs
+
+- **NextAuth v4** is stable; **Auth.js v5** is in `authjs-v5-beta` branch.
+- **CASL** for RBAC: flexible, works server & client.
+- **Prisma** for type-safe DB.
+- **MailHog** for safe local email testing.
+
+## Tests
+
+- Unit: `pnpm test` (Vitest)
+- E2E: `pnpm exec playwright test`
+
+## See Also
+
+- [Next.js 15 Docs](https://nextjs.org/docs/app/guides/upgrading/version-15?utm_source=chatgpt.com)
+- [Tailwind v4 Upgrade](https://tailwindcss.com/docs/upgrade-guide?utm_source=chatgpt.com)
+- [shadcn/ui](https://ui.shadcn.com/docs/installation/next)
+- [MailHog](https://github.com/mailhog/MailHog?utm_source=chatgpt.com)
+- [Node.js LTS](https://endoflife.date/nodejs?utm_source=chatgpt.com)
