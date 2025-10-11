@@ -44,7 +44,7 @@ pnpm dev
 
 1. Clone repo, install deps, copy `.env.example` to `.env.local`.
 2. Start Docker: `docker compose up -d`
-3. Run migrations/seeds: `pnpm prisma migrate deploy && pnpm prisma db seed`
+3. Run migrations/seeds: `pnpm exec prisma generate  && pnpm exec prisma migrate dev --name init && pnpm exec tsx prisma/seed.ts`
 4. Start dev server: `pnpm dev`
 5. Access MailHog at [localhost:8025](http://localhost:8025), pgAdmin at [localhost:5050](http://localhost:5050).
 
