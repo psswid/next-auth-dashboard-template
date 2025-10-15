@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { randomBytes } from 'crypto';
-import addMinutes from 'date-fns/addMinutes';
 import { requestResetSchema } from '@/zod/auth';
 import { sendResetEmail } from '@/lib/mailer';
 
@@ -14,13 +13,12 @@ export async function POST(request: Request) {
     if (!user) return NextResponse.json({ ok: true }); // do not reveal
 
     const token = randomBytes(32).toString('hex');
-    const expires = addMinutes(new Date(), 60);
+    // expire in 60 minutes
+    const expires = new Date(Date.now() + 60 * 60 * 1000);
 
-    await prisma.verificationToken.upsert({
-      where: { identifier: email },
-      update: { token, expires },
-      create: { identifier: email, token, expires },
-    });
+    // Delete any existing tokens for this identifier and create a new one.
+    await prisma.verificationToken.deleteMany({ where: { identifier: email } });
+    await prisma.verificationToken.create({ data: { identifier: email, token, expires } });
 
     const resetUrl = `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/auth/reset?token=${token}&email=${encodeURIComponent(email)}`;
     await sendResetEmail({ to: email, resetUrl });

@@ -8,8 +8,9 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { email, token, password } = resetSchema.parse(body);
 
-    const vt = await prisma.verificationToken.findUnique({ where: { identifier: email } });
-    if (!vt || vt.token !== token || vt.expires < new Date()) {
+    // Find by token and identifier (Prisma schema uses @@unique([identifier, token]))
+    const vt = await prisma.verificationToken.findFirst({ where: { identifier: email, token } });
+    if (!vt || vt.expires < new Date()) {
       return NextResponse.json({ error: 'Invalid or expired token' }, { status: 400 });
     }
 
@@ -19,7 +20,9 @@ export async function POST(request: Request) {
     const hash = await argon2.hash(password, { type: argon2.argon2id });
     await prisma.user.update({ where: { id: user.id }, data: { passwordHash: hash } });
 
+    // Remove any tokens for this identifier
     await prisma.verificationToken.deleteMany({ where: { identifier: email } });
+    // Invalidate sessions for safety
     await prisma.session.deleteMany({ where: { userId: user.id } });
 
     return NextResponse.json({ ok: true });
