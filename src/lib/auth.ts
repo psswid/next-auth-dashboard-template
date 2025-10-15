@@ -1,5 +1,5 @@
 import { argon2d } from 'argon2';
-import { prisma } from './prisma';
+import { prisma } from '../lib/db';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { getServerSession, type NextAuthOptions } from 'next-auth';
 import CredentialProvider from 'next-auth/providers/credentials';
@@ -22,7 +22,7 @@ export const authOptions = {
                 email: { label: 'Email', type: 'email' },
                 password: { label: 'Password', type: 'password' },
             },
-            async authorize(credentials: { email?: string; password?: string } | undefined) {
+            async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) {
                     return null;
                 }
@@ -89,8 +89,8 @@ export const authOptions = {
     secret: process.env.NEXTAUTH_SECRET,
 } as NextAuthOptions;
 
-export const getServerAuthSession = ( ...args: Parameters<typeof getServerSession>) => {
-    nextAuthGetserverSession(...args);
+export const getServerAuthSession = ( req: any, res: any) => {
+    nextAuthGetServerSession(req, res, authOptions);
 }
 
 export default authOptions;
