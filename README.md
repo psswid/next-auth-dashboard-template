@@ -79,6 +79,51 @@ pnpm dev
 - Unit: `pnpm test` (Vitest)
 - E2E: `pnpm exec playwright test`
 
+## Integration tests
+
+This project includes an isolated ephemeral Postgres configuration for integration tests.
+
+- Test compose file: `docker-compose.test.yml` (Postgres mapped to host port 5433)
+- Useful npm scripts:
+	- `npm run integration:db:up` — start ephemeral test DB
+	- `npm run integration:reset` — reset test DB (runs `prisma migrate reset` against the test DB)
+	- `npm run integration:run` — full flow: start test DB, wait for it, run migrations, run integration tests, and teardown
+
+Local quick-start:
+
+```bash
+# start ephemeral test DB
+npm run integration:db:up
+
+# run tests (the scripts set TEST_DATABASE_URL to the test DB)
+npm run integration:run
+
+# or run step-by-step
+PGPORT=5433 ./scripts/wait-for-db.sh
+export TEST_DATABASE_URL='postgresql://postgres:postgres@localhost:5433/app_db'
+npx prisma migrate deploy
+npx vitest run tests/integration --run
+
+# teardown
+npm run integration:db:down
+```
+
+Notes:
+- The test DB maps to host port `5433` to avoid colliding with the default dev DB (5432).
+- The `integration:run` npm script uses a custom compose project (`-p integration-test`) so it won't try to remove your dev network when tearing down.
+- Don't run `integration:reset` against your development DB — it's destructive by design and intended for the ephemeral test DB.
+
+Environment files
+-----------------
+
+This repo provides multiple env files to make local host development and containerized development easier:
+
+- `.env` — for host-local development. Uses `localhost` for services (e.g., `DATABASE_URL` points at `localhost:5432`, `MAIL_HOST=localhost`).
+- `.env.docker.local` — for running inside Docker Compose. Uses service hostnames (`db`, `mailhog`) so containers can resolve each other.
+- `.env.example` — template you can copy when setting up a new environment.
+
+When running the app on your laptop (dev server outside Docker), prefer `.env`. When running everything via `docker compose`, use `.env.docker.local`.
+
 ## See Also
 
 - [Next.js 15 Docs](https://nextjs.org/docs/app/guides/upgrading/version-15?utm_source=chatgpt.com)
