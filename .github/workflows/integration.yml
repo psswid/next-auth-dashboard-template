@@ -1,6 +1,7 @@
 name: Integration tests
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
   pull_request:
@@ -9,6 +10,21 @@ on:
 jobs:
   integration:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,25 +37,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Start integration DB
-        run: |
-          docker compose -p integration-test -f docker-compose.test.yml up -d db
-
       - name: Wait for Postgres
+        # Wait for the service to be ready on localhost:5432
         run: |
-          PGPORT=5433 ./scripts/wait-for-db.sh
+          PGPORT=5432 ./scripts/wait-for-db.sh
 
       - name: Run migrations
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5433/app_db
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app_db
         run: npx prisma migrate deploy
 
       - name: Run integration tests
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5433/app_db
-          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5433/app_db
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app_db
+          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app_db
         run: npx vitest run tests/integration --run
-
-      - name: Teardown
-        if: always()
-        run: docker compose -p integration-test -f docker-compose.test.yml down --volumes
