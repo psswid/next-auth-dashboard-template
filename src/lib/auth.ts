@@ -1,12 +1,10 @@
-import { argon2d } from 'argon2';
 import { prisma } from '../lib/db';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import { getServerSession, type NextAuthOptions } from 'next-auth';
+import type { NextAuthOptions } from 'next-auth';
 import CredentialProvider from 'next-auth/providers/credentials';
 import GitHubProvider from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
 import argon2 from 'argon2';
-import { Session } from 'inspector/promises';
 import { getServerSession as nextAuthGetServerSession } from 'next-auth/next';
 
 
@@ -22,26 +20,18 @@ export const authOptions = {
                 email: { label: 'Email', type: 'email' },
                 password: { label: 'Password', type: 'password' },
             },
-            async authorize(credentials) {
+            async authorize(credentials: { email?: string; password?: string } | undefined) {
                 if (!credentials?.email || !credentials?.password) {
                     return null;
                 }
-                
-                const user = await prisma.user.findUnique({
-                    where: { email: credentials.email },
-                });
 
-                if (!user || !user.passwordHash) {
-                    return null;
-                }
-                if (!user.isActive) {
-                    return null;
-                }
+                const user = await prisma.user.findUnique({ where: { email: credentials.email } });
+
+                if (!user || !user.passwordHash) return null;
+                if (!user.isActive) return null;
 
                 const ok = await argon2.verify(user.passwordHash, credentials.password);
-                if (!ok) {
-                    return null;
-                }
+                if (!ok) return null;
 
                 return {
                     id: user.id,
@@ -60,12 +50,11 @@ export const authOptions = {
         }),
     ],
     callbacks: {
-        async session({ session, user }) {
-            const dbUser = await prisma.user.findUnique({
-                where: { id: user?.id as string }
-            });
+        async session({ session, user }: { session: any; user: any }) {
+            const dbUser = await prisma.user.findUnique({ where: { id: user?.id as string } });
             if (dbUser) {
-                (session as Session & { user: any }).user = {
+                // apply DB fields to session user
+                (session as any).user = {
                     ...session.user,
                     id: dbUser.id,
                     isActive: dbUser.isActive,
@@ -90,7 +79,7 @@ export const authOptions = {
 } as NextAuthOptions;
 
 export const getServerAuthSession = ( req: any, res: any) => {
-    nextAuthGetServerSession(req, res, authOptions);
+    return nextAuthGetServerSession(req, res, authOptions);
 }
 
 export default authOptions;
