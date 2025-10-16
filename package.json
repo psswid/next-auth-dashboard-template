@@ -10,7 +10,11 @@
     "format": "biome format --write",
     "test": "vitest",
     "test:watch": "vitest --watch",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+  "integration:db:up": "docker compose -p integration-test -f docker-compose.test.yml up -d db",
+  "integration:db:down": "docker compose -p integration-test -f docker-compose.test.yml down --volumes",
+    "integration:reset": "./scripts/reset-test-db.sh",
+    "integration:run": "docker compose -p integration-test -f docker-compose.test.yml up -d db && PGPORT=5433 ./scripts/wait-for-db.sh && DATABASE_URL=postgresql://postgres:postgres@localhost:5433/app_db TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5433/app_db npx prisma migrate deploy && DATABASE_URL=postgresql://postgres:postgres@localhost:5433/app_db TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5433/app_db npx vitest run tests/integration --run && docker compose -p integration-test -f docker-compose.test.yml down --volumes"
   },
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.7",
